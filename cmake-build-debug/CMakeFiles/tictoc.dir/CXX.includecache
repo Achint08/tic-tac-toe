@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/delhivery/Desktop/work/practice/tictoc/main.cpp
+iostream
+-
+vector
+-
+cstdlib
+-
+ctime
+-
+
