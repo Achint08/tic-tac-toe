@@ -4,7 +4,7 @@
 #include <ctime>
 using namespace std;
 
-typedef vector<vector<char>> board;
+typedef vector<vector<char>> board;  //array of array of characters
 
 void newGame(board &tictac) {
     for(int i = 0; i < 5; i++) {
