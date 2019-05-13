@@ -2,6 +2,9 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include<string>
+#include <algorithm>
+
 using namespace std;
 
 typedef vector<vector<char>> board;
@@ -48,14 +51,27 @@ void displayRules() {
 int main() {
     srand(time(NULL));
     board tictac(5);
-    int playFlag = 1;
+    int playFlag = 1, valid_input;
+    string play_input;
     cout << "Let's play Tic tac toe." << endl;
     displayRules();
     while(playFlag) {
         newGame(tictac);
         printBoard(tictac);
-        playFlag = 0;
-
+        do {
+            cout << "Do you want to play again? Press Y for Yes and N for No" << endl;
+            cin >> play_input;
+            transform(play_input.begin(), play_input.end(), play_input.begin(), ::tolower);
+            if (play_input == "yes" || play_input == "ye" || play_input == "y") {
+                playFlag = 1;
+                valid_input = 1;
+            } else if (play_input == "no" || play_input == "n") {
+                playFlag = 0;
+                valid_input = 1;
+            } else {
+                valid_input = 0;
+            }
+        } while (!valid_input);
     }
     return 0;
 }
