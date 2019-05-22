@@ -16,12 +16,110 @@ typedef int value;
 typedef int turn;
 typedef vector<bool> isUsed;
 typedef vector<pair<x_cord, y_cord>> position_map;
-position_map pm(9);
+position_map pm;
 
 
 //TO-DO
 turn boardCheck(board &tictac) {
-    return -1;
+    char pos_char;
+    turn p = -1;
+    //Horizontal win check
+    for(value i = 1; i <= 7; i += 3) {
+        pos_char = tictac[pm[i - 1].first][pm[i - 1].second];
+        for(value j = i + 1; j <= i + 2; j++) {
+            if(tictac[pm[j - 1].first][pm[j - 1].second] != pos_char) {
+                p = -1;
+                break;
+            } else if(tictac[pm[j - 1].first][pm[j - 1].second] == pos_char) {
+                if(pos_char == 'X') {
+                    p = 1;
+                    if(j == i + 2) {
+                        break;
+                    }
+                } else if (pos_char == 'O'){
+                    p = 2;
+                    if(j == i + 2) {
+                        break;
+                    }
+                }
+            }
+        }
+        if(p != -1) {
+            return p;
+        }
+    }
+
+    //Vertical Win check
+    for(value i = 1; i <= 3; i ++) {
+        pos_char = tictac[pm[i - 1].first][pm[i - 1].second];
+        for(value j = i + 3; j <= i + 6; j+= 3) {
+            if(tictac[pm[j - 1].first][pm[j - 1].second] != pos_char || tictac[pm[j - 1].first][pm[j - 1].second] == ' ') {
+                p = -1;
+                break;
+            } else if(tictac[pm[j - 1].first][pm[j - 1].second] == pos_char) {
+                if(pos_char == 'X') {
+                    p = 1;
+                    if(j == i + 6) {
+                        break;
+                    }
+                } else if (pos_char == 'O') {
+                    p = 2;
+                    if(j == i + 6) {
+                        break;
+                    }
+                }
+            }
+        }
+        if(p != -1) {
+            return  p;
+        }
+    }
+    //Diagonal Win check
+    pos_char = tictac[pm[0].first][pm[0].second];
+    for(value j = 5; j <= 9; j+= 4) {
+        if(tictac[pm[j - 1].first][pm[j - 1].second] != pos_char) {
+            p = -1;
+            break;
+        } else if(tictac[pm[j - 1].first][pm[j - 1].second] == pos_char) {
+            if(pos_char == 'X') {
+                p = 1;
+                if(j == 9) {
+                    break;
+                }
+            } else if (pos_char == 'O') {
+                p = 2;
+                if(j == 9) {
+                    break;
+                }
+            }
+        }
+    }
+
+    if( p != -1) {
+        return p;
+    }
+
+    pos_char = tictac[pm[2].first][pm[2].second];
+    for(value j = 5; j <= 7; j+= 2) {
+        if(tictac[pm[j - 1].first][pm[j - 1].second] != pos_char) {
+            p = -1;
+            break;
+        } else if(tictac[pm[j - 1].first][pm[j - 1].second] == pos_char) {
+            if(pos_char == 'X') {
+                p = 1;
+                if(j == 7) {
+                    break;
+                }
+            } else if (pos_char == 'O') {
+                p = 2;
+                if(j == 7) {
+                    break;
+                }
+
+            }
+        }
+    }
+    return p;
 }
 
 
@@ -34,6 +132,7 @@ void printBoard(board &tictac) {
         }
         cout << endl;
     }
+    cout << endl << endl;
 }
 
 void startGame(board &tictac){
@@ -43,35 +142,35 @@ void startGame(board &tictac){
     x_cord x;
     y_cord y;
     int i = 0;
-    isUsed iu(false, 9);
+    isUsed iu(9, false);
     cout << "Let's play tic tac toe" << endl;
     if(rand() % 2 == 0) {
         t = 1;
         cout << "Player 1 turn first" << endl;
     } else {
         t = 2;
-        cout << "Player 1 turn first" << endl;
+        cout << "Player 2 turn first" << endl;
     }
     while(i < 9) {
-        cout << "Choose number for move: Player " << t << "turn" << endl;
+        cout << "Choose number for move: Player " << t << " turn" << endl;
         cin >> v;
         if(iu[v] == true) {
             cout << "Oops!! Place already occupied" << endl;
             continue;
         }
-        x = pm[v].first;
-        y = pm[v].second;
-        tictac[x][y] = (t == 0) ? 'X' : 'O';
+        x = pm[v -1].first;
+        y = pm[v - 1].second;
+        tictac[x][y] = (t == 1) ? 'X' : 'O';
         printBoard(tictac);
         win = boardCheck(tictac);
-        if(win == 0 || win == 1) {
-            cout << "Player" << win << "wins" << endl;
+        if(win == 1 || win == 2) {
+            cout << "Player " << win << " wins" << endl;
             break;
         }
         iu[v] = true;
         i++;
         //change the turn
-        t = (t + 1) % 2;
+        t = t % 2 + 1;
     }
 }
 
@@ -86,7 +185,7 @@ void newGame(board &tictac) {
 
 void setupDisplayRules() {
     board rules_board(5);
-
+    cout << "RULES" << endl << endl;
     for (x_cord i = 0; i < 5; i++) {
         rules_board[i].resize(5);
         for (y_cord j = 0; j < 5; j++) {
@@ -101,8 +200,8 @@ void setupDisplayRules() {
         }
 
     }
+    cout << "Use keys from 1 - 9" << endl << endl;
     printBoard(rules_board);
-    cout << "Use keys from 1 - 9" << endl;
 }
 
 int main() {
@@ -112,8 +211,8 @@ int main() {
     string play_input;
     while(playFlag) {
         newGame(tictac);
-        printBoard(tictac);
-        cout << "Let's play Tic tac toe." << endl;
+        cout << endl;
+        cout << "----------------- Let's play Tic tac toe. ----------------- " << endl;
         setupDisplayRules();
         do {
             cout << "Do you want to play again? Press Y for Yes and N for No" << endl;
