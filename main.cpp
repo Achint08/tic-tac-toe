@@ -17,14 +17,12 @@ typedef int turn;
 typedef vector<string> playerName;
 typedef vector<bool> isUsed;
 typedef vector<pair<x_cord, y_cord> > position_map;
-position_map pm;
-playerName p;
 
 
-turn boardCheck(board &tictac) {
+turn boardCheck(board &tictac, position_map &pm) {
     char pos_char;
     turn p = -1;
-    //Horizontal win check
+    //Horizontal win check: Pattern 123, 456, 789
     for(value i = 1; i <= 7; i += 3) {
         pos_char = tictac[pm[i - 1].first][pm[i - 1].second];
         for(value j = i + 1; j <= i + 2; j++) {
@@ -50,7 +48,7 @@ turn boardCheck(board &tictac) {
         }
     }
 
-    //Vertical Win check
+    //Vertical Win check: Pattern 147, 258, 369
     for(value i = 1; i <= 3; i ++) {
         pos_char = tictac[pm[i - 1].first][pm[i - 1].second];
         for(value j = i + 3; j <= i + 6; j+= 3) {
@@ -75,7 +73,7 @@ turn boardCheck(board &tictac) {
             return  p;
         }
     }
-    //Diagonal Win check
+    //Diagonal Win check: Pattern 159
     pos_char = tictac[pm[0].first][pm[0].second];
     for(value j = 5; j <= 9; j+= 4) {
         if(tictac[pm[j - 1].first][pm[j - 1].second] != pos_char) {
@@ -100,6 +98,7 @@ turn boardCheck(board &tictac) {
         return p;
     }
 
+    //Diagonal Win check: Pattern 357
     pos_char = tictac[pm[2].first][pm[2].second];
     for(value j = 5; j <= 7; j+= 2) {
         if(tictac[pm[j - 1].first][pm[j - 1].second] != pos_char) {
@@ -136,7 +135,7 @@ void printBoard(board &tictac) {
     cout << endl << endl;
 }
 
-void startGame(board &tictac){
+void startGame(board &tictac, playerName &p, position_map &pm) {
     turn t;
     turn win;
     value v;
@@ -166,7 +165,7 @@ void startGame(board &tictac){
         y = pm[v - 1].second;
         tictac[x][y] = (t == 1) ? 'X' : 'O';
         printBoard(tictac);
-        win = boardCheck(tictac);
+        win = boardCheck(tictac, pm);
         if(win == 1 || win == 2) {
             cout << p[win - 1] << " wins" << endl;
             break;
@@ -190,7 +189,7 @@ void newGame(board &tictac) {
     }
 }
 
-void setupDisplayRules() {
+void setupDisplayRules(position_map &pm) {
     board rules_board(5);
     cout << "RULES" << endl << endl;
     for (x_cord i = 0; i < 5; i++) {
@@ -211,7 +210,7 @@ void setupDisplayRules() {
     printBoard(rules_board);
 }
 
-void setPlayerName() {
+void setPlayerName(playerName &p) {
     p.resize(2);
     string s;
     for(int i = 0; i < 2; i++) {
@@ -225,10 +224,12 @@ void setPlayerName() {
 int main() {
     srand(time(NULL));
     board tictac(5);
+    position_map pm;
+    playerName p;
     int playFlag = 1, valid_input;
     string play_input;
-    setPlayerName();
-    setupDisplayRules();
+    setPlayerName(p);
+    setupDisplayRules(pm);
     while(playFlag) {
         newGame(tictac);
         cout << endl;
@@ -240,7 +241,7 @@ int main() {
             if (play_input == "yes" || play_input == "ye" || play_input == "y") {
                 playFlag = 1;
                 valid_input = 1;
-                startGame(tictac);
+                startGame(tictac, p, pm);
             } else if (play_input == "no" || play_input == "n") {
                 playFlag = 0;
                 valid_input = 1;
