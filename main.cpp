@@ -14,12 +14,13 @@ typedef int x_cord;
 typedef int y_cord;
 typedef int value;
 typedef int turn;
+typedef vector<string> playerName;
 typedef vector<bool> isUsed;
-typedef vector<pair<x_cord, y_cord>> position_map;
+typedef vector<pair<x_cord, y_cord> > position_map;
 position_map pm;
+playerName p;
 
 
-//TO-DO
 turn boardCheck(board &tictac) {
     char pos_char;
     turn p = -1;
@@ -146,26 +147,32 @@ void startGame(board &tictac){
     cout << "Let's play tic tac toe" << endl;
     if(rand() % 2 == 0) {
         t = 1;
-        cout << "Player 1 turn first" << endl;
     } else {
         t = 2;
-        cout << "Player 2 turn first" << endl;
     }
+    cout << p[t - 1] << "'s turn first" << endl;
     while(i < 9) {
-        cout << "Choose number for move: Player " << t << " turn" << endl;
+        cout << "Choose number for move: " << p[t - 1] << "'s turn" << endl;
         cin >> v;
         if(iu[v] == true) {
             cout << "Oops!! Place already occupied" << endl;
             continue;
         }
-        x = pm[v -1].first;
+        if(v < 1 || v > 9) {
+            cout << p[t - 1] << ": Choose between 1 and 9. All okay, bro?" << endl;
+            continue;
+        }
+        x = pm[v - 1].first;
         y = pm[v - 1].second;
         tictac[x][y] = (t == 1) ? 'X' : 'O';
         printBoard(tictac);
         win = boardCheck(tictac);
         if(win == 1 || win == 2) {
-            cout << "Player " << win << " wins" << endl;
+            cout << p[win - 1] << " wins" << endl;
             break;
+        }
+        if(i == 8 && win == -1) {
+            cout << "Match Draw" << endl;
         }
         iu[v] = true;
         i++;
@@ -204,18 +211,30 @@ void setupDisplayRules() {
     printBoard(rules_board);
 }
 
+void setPlayerName() {
+    p.resize(2);
+    string s;
+    for(int i = 0; i < 2; i++) {
+        cout << "Set Player " << i + 1 << " Name"<< endl << endl;
+        cin >> s;
+        p[i] = s;
+    }
+
+}
+
 int main() {
     srand(time(NULL));
     board tictac(5);
     int playFlag = 1, valid_input;
     string play_input;
+    setPlayerName();
+    setupDisplayRules();
     while(playFlag) {
         newGame(tictac);
         cout << endl;
         cout << "----------------- Let's play Tic tac toe. ----------------- " << endl;
-        setupDisplayRules();
         do {
-            cout << "Do you want to play again? Press Y for Yes and N for No" << endl;
+            cout << "Ready to play? Press Y for Yes and N for No" << endl;
             cin >> play_input;
             transform(play_input.begin(), play_input.end(), play_input.begin(), ::tolower);
             if (play_input == "yes" || play_input == "ye" || play_input == "y") {
