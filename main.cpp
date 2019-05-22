@@ -21,6 +21,11 @@ typedef vector<pair<x_cord, y_cord> > position_map;
 typedef char mode;
 typedef int score;
 
+class gameState {
+public:
+    score alpha, beta, value;
+};
+
 void printBoard(board &tictac) {
 
 
@@ -137,53 +142,82 @@ turn boardCheck(board &tictac, position_map pm) {
     return p;
 }
 
-score calcScore(board tictac, isUsed iu, position_map pm, depth d, turn t) {
-    score s, max_score = INT_MIN, min_score = INT_MAX;
+gameState calciScore(board tictac, isUsed iu, position_map pm, depth d, turn t, gameState parentState) {
+    gameState returned_state, currentState = parentState;
+    bool checkRemain = false;
+    for (value i = 1; i <= 9; i++) {
+        if (iu[i - 1]) {
+            checkRemain = true;
+            break;
+        }
+    }
+    if (!checkRemain) {
+        currentState.value = d;
+        return currentState;
+    }
+    if (t == 1) {
+        currentState.value = INT_MAX;
+    } else {
+        currentState.value = INT_MIN;
+    }
     turn win = boardCheck(tictac, pm);
     if (win == 2) {
-        return (10 - d);
+        currentState.value = (10 - d);
+        return currentState;
     } else if (win == 1) {
-        return (-10 + d);
+        currentState.value = (d - 10);
+        return currentState;
     }
     for (value i = 1; i <= 9; i++) {
         if (!iu[i - 1]) {
             iu[i - 1] = true;
             tictac[pm[i - 1].first][pm[i - 1].second] = (t == 1) ? 'X' : 'O';
-            s = calcScore(tictac, iu, pm, d + 1, t % 2 + 1);
-            iu[i - 1] = false;
+            returned_state = calciScore(tictac, iu, pm, d + 1, t % 2 + 1, currentState);
             tictac[pm[i - 1].first][pm[i - 1].second] = ' ';
-            if (s < min_score && t == 1) {
-                min_score = s;
+            iu[i - 1] = false;
+            if (t == 1) {
+                if (returned_state.value < currentState.beta) {
+                    currentState.beta = returned_state.value;
+                }
+                if (returned_state.value < currentState.value) {
+                    currentState.value = returned_state.value;
+                }
             }
-            if (s > max_score && t == 2) {
-                max_score = s;
+            if (t == 2) {
+                if (returned_state.value > currentState.alpha) {
+                    currentState.alpha = returned_state.value;
+                }
+                if (returned_state.value > currentState.value) {
+                    currentState.value = returned_state.value;
+                }
             }
-        } else {
-
+            if (currentState.alpha > currentState.beta) {
+                break;
+            }
         }
     }
-    if (t == 1) {
-        return min_score;
-    } else {
-        return max_score;
-    }
+
+    return currentState;
 }
 
 //Computer AI Movement through minmax algorithm
 // TO-DO: Alpha beta pruning
 value autoMove(board tictac, isUsed iu, position_map pm) {
-    score s, max_score = INT_MIN;
+    score max_score = INT_MIN;
+    gameState s;
+    s.alpha = INT_MIN;
+    s.beta = INT_MAX;
     value move;
     turn t = 2;
     for (value i = 1; i <= 9; i++) {
         if (!iu[i - 1]) {
             iu[i - 1] = true;
             tictac[pm[i - 1].first][pm[i - 1].second] = 'O';
-            s = calcScore(tictac, iu, pm, 0, t % 2 + 1);
+            s = calciScore(tictac, iu, pm, 0, t % 2 + 1, s);
             iu[i - 1] = false;
             tictac[pm[i - 1].first][pm[i - 1].second] = ' ';
-            if (s > max_score) {
-                max_score = s;
+            if (s.value > max_score) {
+                max_score = s.value;
                 move = i;
             }
         }
