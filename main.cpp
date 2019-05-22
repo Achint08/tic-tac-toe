@@ -4,7 +4,7 @@
 #include <ctime>
 #include<string>
 #include <algorithm>
-#include <map>
+#include <climits>
 
 using namespace std;
 
@@ -14,12 +14,27 @@ typedef int x_cord;
 typedef int y_cord;
 typedef int value;
 typedef int turn;
+typedef int depth;
 typedef vector<string> playerName;
 typedef vector<bool> isUsed;
 typedef vector<pair<x_cord, y_cord> > position_map;
+typedef char mode;
+typedef int score;
+
+void printBoard(board &tictac) {
 
 
-turn boardCheck(board &tictac, position_map &pm) {
+    for (x_cord i = 0; i < 5; i++) {
+        for (y_cord j = 0; j < 5; j++) {
+            cout << tictac[i][j];
+        }
+        cout << endl;
+    }
+    cout << endl << endl;
+}
+
+
+turn boardCheck(board &tictac, position_map pm) {
     char pos_char;
     turn p = -1;
     //Horizontal win check: Pattern 123, 456, 789
@@ -122,20 +137,61 @@ turn boardCheck(board &tictac, position_map &pm) {
     return p;
 }
 
-
-void printBoard(board &tictac) {
-
-
-    for (x_cord i = 0; i < 5; i ++) {
-        for(y_cord j = 0; j < 5; j++) {
-            cout << tictac[i][j];
-        }
-        cout << endl;
+score calcScore(board tictac, isUsed iu, position_map pm, depth d, turn t) {
+    score s, max_score = INT_MIN, min_score = INT_MAX;
+    turn win = boardCheck(tictac, pm);
+    if (win == 2) {
+        return (10 - d);
+    } else if (win == 1) {
+        return (-10 + d);
     }
-    cout << endl << endl;
+    for (value i = 1; i <= 9; i++) {
+        if (!iu[i - 1]) {
+            iu[i - 1] = true;
+            tictac[pm[i - 1].first][pm[i - 1].second] = (t == 1) ? 'X' : 'O';
+            s = calcScore(tictac, iu, pm, d + 1, t % 2 + 1);
+            iu[i - 1] = false;
+            tictac[pm[i - 1].first][pm[i - 1].second] = ' ';
+            if (s < min_score && t == 1) {
+                min_score = s;
+            }
+            if (s > max_score && t == 2) {
+                max_score = s;
+            }
+        } else {
+
+        }
+    }
+    if (t == 1) {
+        return min_score;
+    } else {
+        return max_score;
+    }
 }
 
-void startGame(board &tictac, playerName &p, position_map &pm) {
+//Computer AI Movement through minmax algorithm
+// TO-DO: Alpha beta pruning
+value autoMove(board tictac, isUsed iu, position_map pm) {
+    score s, max_score = INT_MIN;
+    value move;
+    turn t = 2;
+    for (value i = 1; i <= 9; i++) {
+        if (!iu[i - 1]) {
+            iu[i - 1] = true;
+            tictac[pm[i - 1].first][pm[i - 1].second] = 'O';
+            s = calcScore(tictac, iu, pm, 0, t % 2 + 1);
+            iu[i - 1] = false;
+            tictac[pm[i - 1].first][pm[i - 1].second] = ' ';
+            if (s > max_score) {
+                max_score = s;
+                move = i;
+            }
+        }
+    }
+    return move;
+}
+
+void startGame(board &tictac, playerName p, position_map pm, mode m) {
     turn t;
     turn win;
     value v;
@@ -143,7 +199,7 @@ void startGame(board &tictac, playerName &p, position_map &pm) {
     y_cord y;
     int i = 0;
     isUsed iu(9, false);
-    cout << "Let's play tic tac toe" << endl;
+    cout << "----------------- Let's play Tic tac toe. ----------------- " << endl;
     if(rand() % 2 == 0) {
         t = 1;
     } else {
@@ -152,8 +208,13 @@ void startGame(board &tictac, playerName &p, position_map &pm) {
     cout << p[t - 1] << "'s turn first" << endl;
     while(i < 9) {
         cout << "Choose number for move: " << p[t - 1] << "'s turn" << endl;
-        cin >> v;
-        if(iu[v] == true) {
+        if (m == 'c' && t == 2) {
+            v = autoMove(tictac, iu, pm);
+        } else {
+            cin >> v;
+        }
+
+        if (iu[v - 1] == true) {
             cout << "Oops!! Place already occupied" << endl;
             continue;
         }
@@ -173,7 +234,7 @@ void startGame(board &tictac, playerName &p, position_map &pm) {
         if(i == 8 && win == -1) {
             cout << "Match Draw" << endl;
         }
-        iu[v] = true;
+        iu[v - 1] = true;
         i++;
         //change the turn
         t = t % 2 + 1;
@@ -210,10 +271,17 @@ void setupDisplayRules(position_map &pm) {
     printBoard(rules_board);
 }
 
-void setPlayerName(playerName &p) {
+void setPlayerName(playerName &p, mode m) {
     p.resize(2);
     string s;
-    for(int i = 0; i < 2; i++) {
+    int human_players;
+    if (m == 'c') {
+        p[1] = "Computer";
+        human_players = 1;
+    } else {
+        human_players = 2;
+    }
+    for (int i = 0; i < human_players; i++) {
         cout << "Set Player " << i + 1 << " Name"<< endl << endl;
         cin >> s;
         p[i] = s;
@@ -226,14 +294,21 @@ int main() {
     board tictac(5);
     position_map pm;
     playerName p;
+    mode m;
     int playFlag = 1, valid_input;
     string play_input;
-    setPlayerName(p);
+    do {
+        cout << "Press M for Multiplayer mode or  C for (Clash with Computer) mode?" << endl;
+        cin >> m;
+        m = tolower(m);
+        if (m == 'm' || m == 'c') {
+            setPlayerName(p, m);
+        }
+    } while (m != 'm' && m != 'c');
     setupDisplayRules(pm);
     while(playFlag) {
         newGame(tictac);
         cout << endl;
-        cout << "----------------- Let's play Tic tac toe. ----------------- " << endl;
         do {
             cout << "Ready to play? Press Y for Yes and N for No" << endl;
             cin >> play_input;
@@ -241,7 +316,7 @@ int main() {
             if (play_input == "yes" || play_input == "ye" || play_input == "y") {
                 playFlag = 1;
                 valid_input = 1;
-                startGame(tictac, p, pm);
+                startGame(tictac, p, pm, m);
             } else if (play_input == "no" || play_input == "n") {
                 playFlag = 0;
                 valid_input = 1;
